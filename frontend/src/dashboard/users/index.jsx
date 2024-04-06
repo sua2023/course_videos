@@ -68,6 +68,7 @@ export default function Index() {
   const [action, setAtion] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
@@ -151,7 +152,6 @@ export default function Index() {
         }
       })
       .catch((error) => {
-        console.log(error);
         toast.error(action ? "Update user failed" : "Create user failed");
       });
   };
@@ -178,6 +178,8 @@ export default function Index() {
         </Button>
         <TextField
           variant="standard"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -197,48 +199,64 @@ export default function Index() {
                 ))}
               </TableRow>
             </TableHead>
-            <TableBody>
-              {data.map((row, index) => {
-                return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.firstname}</TableCell>
-                    <TableCell>{row.lastname}</TableCell>
-                    <TableCell>{row.username}</TableCell>
-                    <TableCell>{row.email}</TableCell>
-                    <TableCell>{moment(row.created_at).format("ll")}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        color="success"
-                        onClick={() => {
-                          setOpen(true);
-                          setAtion(true);
-                          setDataEvents({
-                            id: row.id,
-                            firstname: row.firstname,
-                            lastname: row.lastname,
-                            username: row.username,
-                            email: row.email,
-                            address: row.address,
-                          });
-                        }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => {
-                          setId(row.id);
-                          setDeleteOpen(true);
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
+            {data?.length > 0 && (
+              <TableBody>
+                {data
+                  ?.filter((row) => {
+                    if (row === "") {
+                      return row;
+                    } else if (
+                      row?.username
+                        .toLocaleLowerCase()
+                        .includes(search?.toLocaleLowerCase())
+                    ) {
+                      return row;
+                    }
+                  })
+                  .map((row, index) => {
+                    return (
+                      <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{row.firstname}</TableCell>
+                        <TableCell>{row.lastname}</TableCell>
+                        <TableCell>{row.username}</TableCell>
+                        <TableCell>{row.email}</TableCell>
+                        <TableCell>
+                          {moment(row.created_at).format("ll")}
+                        </TableCell>
+                        <TableCell>
+                          <IconButton
+                            color="success"
+                            onClick={() => {
+                              setOpen(true);
+                              setAtion(true);
+                              setDataEvents({
+                                id: row.id,
+                                firstname: row.firstname,
+                                lastname: row.lastname,
+                                username: row.username,
+                                email: row.email,
+                                address: row.address,
+                              });
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            color="error"
+                            onClick={() => {
+                              setId(row.id);
+                              setDeleteOpen(true);
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            )}
           </Table>
         </TableContainer>
       </Paper>
