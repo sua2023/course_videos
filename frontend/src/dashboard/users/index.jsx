@@ -1,22 +1,22 @@
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useEffect, useState } from "react";
 
+import { TextareaAutosize } from "@mui/base/TextareaAutosize";
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   IconButton,
   InputAdornment,
@@ -25,9 +25,9 @@ import {
   styled,
 } from "@mui/material";
 import moment from "moment";
-import SearchIcon from "@mui/icons-material/Search";
-import { toast, ToastContainer } from "react-toastify";
-import { TextareaAutosize } from "@mui/base/TextareaAutosize";
+import { toast } from "react-toastify";
+import DialogDelete from "../../components/DialogDelete";
+import { deleteFunction } from "../../service/delete";
 
 const Textarea = styled(TextareaAutosize)(
   ({ theme }) => `
@@ -62,6 +62,11 @@ export default function Index() {
   });
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [id, setId] = useState("");
+  const [action, setAction] = useState(false);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
@@ -99,6 +104,11 @@ export default function Index() {
 
   const handleClose = () => {
     setOpen(false);
+    setAction(false);
+    setDataEvents({});
+  };
+  const handleDeleteClose = () => {
+    setOpenDelete(false);
   };
 
   const handleSubmit = (e) => {
@@ -107,7 +117,8 @@ export default function Index() {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append("Authorization", `Bearer ${token}`);
-
+    const url = "http://localhost:5000/api/user";
+    const updateUrl = `http://localhost:5000/api/user/${dataEvents.id}`;
     const raw = JSON.stringify({
       firstname: dataEvents.firstname,
       lastname: dataEvents.lastname,
@@ -118,16 +129,16 @@ export default function Index() {
     });
 
     const requestOptions = {
-      method: "POST",
+      method: action ? "PUT" : "POST",
       headers: myHeaders,
       body: raw,
       redirect: "follow",
     };
 
-    fetch("http://localhost:5000/api/user", requestOptions)
+    fetch(action ? updateUrl : url, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        if (result.status == 200) {
+        if (result.status == 200 || result.status == 201) {
           fetchData();
           handleClose();
           setDataEvents({});
@@ -141,6 +152,17 @@ export default function Index() {
       });
   };
 
+  const handleDelete = async () => {
+    const url = "http://localhost:5000/api/user";
+    const result = await deleteFunction({ id, url });
+
+    if (result.status == 201) {
+      fetchData();
+      handleDeleteClose();
+      setId("");
+      toast.success(result.message);
+    }
+  };
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
@@ -153,6 +175,8 @@ export default function Index() {
         </Button>
         <TextField
           variant="standard"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -173,26 +197,58 @@ export default function Index() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((row, index) => {
-                return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.firstname}</TableCell>
-                    <TableCell>{row.lastname}</TableCell>
-                    <TableCell>{row.username}</TableCell>
-                    <TableCell>{row.email}</TableCell>
-                    <TableCell>{moment(row.created_at).format("ll")}</TableCell>
-                    <TableCell>
-                      <IconButton color="success">
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {data
+                .filter((row) => {
+                  if (row === "") {
+                    return row;
+                  } else if (
+                    row.username.toLowerCase().includes(search.toLowerCase())
+                  ) {
+                    return row;
+                  }
+                })
+                .map((row, index) => {
+                  return (
+                    <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{row.firstname}</TableCell>
+                      <TableCell>{row.lastname}</TableCell>
+                      <TableCell>{row.username}</TableCell>
+                      <TableCell>{row.email}</TableCell>
+                      <TableCell>
+                        {moment(row.created_at).format("ll")}
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          color="success"
+                          onClick={() => {
+                            setOpen(true);
+                            setAction(true);
+                            setDataEvents({
+                              id: row.id,
+                              firstname: row.firstname,
+                              lastname: row.lastname,
+                              username: row.username,
+                              email: row.email,
+                              address: row.address,
+                            });
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          onClick={() => {
+                            setId(row.id);
+                            setOpenDelete(true);
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>
@@ -203,7 +259,9 @@ export default function Index() {
         component="form"
         onSubmit={handleSubmit}
       >
-        <DialogTitle>Form create an new user</DialogTitle>
+        <DialogTitle>
+          {action ? "Form edit user" : "Form create an new user"}
+        </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -246,7 +304,7 @@ export default function Index() {
           />
           <TextField
             autoFocus
-            required
+            disabled={action ? true : false}
             margin="dense"
             label="Email Address"
             type="email"
@@ -257,20 +315,22 @@ export default function Index() {
               setDataEvents({ ...dataEvents, email: e.target.value })
             }
           />
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            label="Password"
-            type="password"
-            placeholder="*******"
-            fullWidth
-            variant="outlined"
-            value={dataEvents.password}
-            onChange={(e) =>
-              setDataEvents({ ...dataEvents, password: e.target.value })
-            }
-          />
+          {!action && (
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              label="Password"
+              type="password"
+              placeholder="*******"
+              fullWidth
+              variant="outlined"
+              value={dataEvents.password}
+              onChange={(e) =>
+                setDataEvents({ ...dataEvents, password: e.target.value })
+              }
+            />
+          )}
           <Box>
             <InputLabel>Address</InputLabel>
             <Textarea
@@ -290,6 +350,12 @@ export default function Index() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <DialogDelete
+        open={openDelete}
+        handleClose={handleDeleteClose}
+        handleSubmit={handleDelete}
+      />
     </Box>
   );
 }
