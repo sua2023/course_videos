@@ -28,6 +28,8 @@ import moment from "moment";
 import SearchIcon from "@mui/icons-material/Search";
 import { toast, ToastContainer } from "react-toastify";
 import { TextareaAutosize } from "@mui/base/TextareaAutosize";
+import DeleteDialg from "../../components/DialogDelete";
+import { deleteFunction } from "../../service/deleteService";
 
 const Textarea = styled(TextareaAutosize)(
   ({ theme }) => `
@@ -61,7 +63,11 @@ export default function Index() {
     address: "",
   });
   const [data, setData] = useState([]);
+  const [id, setId] = useState("");
   const [open, setOpen] = useState(false);
+  const [action, setAtion] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const fetchData = async () => {
     const token = localStorage.getItem("token");
@@ -97,8 +103,15 @@ export default function Index() {
     "action",
   ];
 
+  const handleDeleteClose = () => {
+    setDeleteOpen(false);
+    setDataEvents({});
+  };
+
   const handleClose = () => {
     setOpen(false);
+    setAtion(false);
+    setDataEvents({});
   };
 
   const handleSubmit = (e) => {
@@ -107,7 +120,8 @@ export default function Index() {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append("Authorization", `Bearer ${token}`);
-
+    const url = "http://localhost:5000/api/user";
+    const updateUrl = `http://localhost:5000/api/user/${dataEvents.id}`;
     const raw = JSON.stringify({
       firstname: dataEvents.firstname,
       lastname: dataEvents.lastname,
@@ -118,16 +132,16 @@ export default function Index() {
     });
 
     const requestOptions = {
-      method: "POST",
+      method: action ? "PUT" : "POST",
       headers: myHeaders,
       body: raw,
       redirect: "follow",
     };
 
-    fetch("http://localhost:5000/api/user", requestOptions)
+    fetch(action ? updateUrl : url, requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        if (result.status == 200) {
+        if (result.status == 200 || result.status == 201) {
           fetchData();
           handleClose();
           setDataEvents({});
@@ -137,8 +151,19 @@ export default function Index() {
         }
       })
       .catch((error) => {
-        toast.error("Create user failed");
+        console.log(error);
+        toast.error(action ? "Update user failed" : "Create user failed");
       });
+  };
+
+  const handleDelete = async () => {
+    const url = "http://localhost:5000/api/user";
+    const result = await deleteFunction({ id, url });
+    if (result.status == 201) {
+      toast.success(result.message);
+      handleDeleteClose();
+      fetchData();
+    }
   };
 
   return (
@@ -183,10 +208,30 @@ export default function Index() {
                     <TableCell>{row.email}</TableCell>
                     <TableCell>{moment(row.created_at).format("ll")}</TableCell>
                     <TableCell>
-                      <IconButton color="success">
+                      <IconButton
+                        color="success"
+                        onClick={() => {
+                          setOpen(true);
+                          setAtion(true);
+                          setDataEvents({
+                            id: row.id,
+                            firstname: row.firstname,
+                            lastname: row.lastname,
+                            username: row.username,
+                            email: row.email,
+                            address: row.address,
+                          });
+                        }}
+                      >
                         <EditIcon />
                       </IconButton>
-                      <IconButton color="error">
+                      <IconButton
+                        color="error"
+                        onClick={() => {
+                          setId(row.id);
+                          setDeleteOpen(true);
+                        }}
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>
@@ -203,7 +248,9 @@ export default function Index() {
         component="form"
         onSubmit={handleSubmit}
       >
-        <DialogTitle>Form create an new user</DialogTitle>
+        <DialogTitle>
+          {action ? "Form edit user" : "Form create an new user"}
+        </DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -247,6 +294,7 @@ export default function Index() {
           <TextField
             autoFocus
             required
+            disabled={action ? true : false}
             margin="dense"
             label="Email Address"
             type="email"
@@ -257,20 +305,22 @@ export default function Index() {
               setDataEvents({ ...dataEvents, email: e.target.value })
             }
           />
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            label="Password"
-            type="password"
-            placeholder="*******"
-            fullWidth
-            variant="outlined"
-            value={dataEvents.password}
-            onChange={(e) =>
-              setDataEvents({ ...dataEvents, password: e.target.value })
-            }
-          />
+          {!action && (
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              label="Password"
+              type="password"
+              placeholder="*******"
+              fullWidth
+              variant="outlined"
+              value={dataEvents.password}
+              onChange={(e) =>
+                setDataEvents({ ...dataEvents, password: e.target.value })
+              }
+            />
+          )}
           <Box>
             <InputLabel>Address</InputLabel>
             <Textarea
@@ -290,6 +340,11 @@ export default function Index() {
           </Button>
         </DialogActions>
       </Dialog>
+      <DeleteDialg
+        open={deleteOpen}
+        handleClose={handleDeleteClose}
+        handleDelete={handleDelete}
+      />
     </Box>
   );
 }
