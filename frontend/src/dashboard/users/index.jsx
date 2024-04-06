@@ -102,6 +102,7 @@ export default function Index() {
     "action",
   ];
 
+
   const handleClose = () => {
     setOpen(false);
     setAction(false);
@@ -148,7 +149,7 @@ export default function Index() {
         }
       })
       .catch((error) => {
-        toast.error("Create user failed");
+        toast.error(action ? "Update user failed" : "Create user failed");
       });
   };
 
