@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function Login() {
   const navigate = useNavigate();
@@ -28,7 +29,10 @@ function Login() {
       })
       .then((result) => {
         if (result.status == 200) {
+          const decoded = jwtDecode(result.token);
+          console.log(decoded);
           localStorage.setItem("token", result.token);
+          localStorage.setItem("user", JSON.stringify(decoded));
           location.reload();
           navigate("/dashboard");
         }
