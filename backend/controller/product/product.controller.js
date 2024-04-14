@@ -163,7 +163,6 @@ const addStock = (req, res) => {
     }
   );
 };
-
 module.exports = {
   createProduct,
   getProducts,

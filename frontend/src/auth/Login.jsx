@@ -38,7 +38,7 @@ function Login() {
         }
       })
       .catch((error) => {
-        this.setState({ errorMessage: error.toString() });
+        console.log(error);
       });
   };
   return (

@@ -28,7 +28,11 @@ import {
 } from "@mui/material";
 import moment from "moment";
 import Loader from "../../components/Loader";
-import { createProduct, createStockProduct, useGetProducts } from "../../service/productServie";
+import {
+  createProduct,
+  createStockProduct,
+  useGetProducts,
+} from "../../service/productServie";
 import { useGetCategory } from "../../service/categoryService";
 import DialogDelete from "../../components/DialogDelete";
 import { deleteFunction } from "../../service/delete";
@@ -55,7 +59,7 @@ function Home() {
     setIsOpen(false);
     setDataEvents({ data: {}, action: "" });
   };
-
+  console.log(dataEvents);
   const columns = [
     "ID",
     "Name",
@@ -72,7 +76,7 @@ function Home() {
     const method = "POST";
     const updateMethod = "PUT";
     const url = "http://localhost:5000/api/product";
-    const updateUrl = `http://localhost:5000/api/product/${dataEvents.data.id}`;
+    const updateUrl = `http://localhost:5000/api/product/${dataEvents.data?.id}`;
     const result = await createProduct(
       dataEvents.data,
       id,
@@ -100,8 +104,7 @@ function Home() {
       toast.success(result.message);
     }
   };
-
-  const handleAddStock = async(e) => {
+  const handleAddStock = async (e) => {
     e.preventDefault();
     const result = await createStockProduct(dataEvents.data);
     if (result.status == 200) {
@@ -175,14 +178,14 @@ function Home() {
                         <IconButton
                           onClick={() => {
                             setIsOpen(true);
-                            setDataEvents({
-                              action: "",
+                            setDataEvents((prev) => ({
+                              ...prev,
                               data: {
                                 id: row.id,
                                 name: row.name,
                                 unit: row.unit,
                               },
-                            });
+                            }));
                           }}
                         >
                           <AddCircleOutlineIcon />
@@ -334,7 +337,7 @@ function Home() {
             Cancel
           </Button>
           <Button type="submit" variant="contained" color="success">
-            Create
+            {dataEvents.action ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -350,65 +353,33 @@ function Home() {
         component="form"
         onSubmit={handleAddStock}
       >
-        <DialogTitle>Form add stock product</DialogTitle>
+        <DialogTitle>Form create product stock</DialogTitle>
         <DialogContent>
           <InputLabel>Product name</InputLabel>
           <TextField
-            autoFocus
-            required
             margin="dense"
-            type="text"
             fullWidth
             variant="outlined"
-            disabled
             value={dataEvents.data.name}
-            onChange={(e) =>
-              setDataEvents((prevData) => ({
-                ...prevData,
-                data: {
-                  ...prevData.data,
-                  name: e.target.value,
-                },
-              }))
-            }
           />
           <InputLabel>Unit</InputLabel>
           <TextField
-            disabled
-            autoFocus
-            required
             margin="dense"
-            type="text"
             fullWidth
             variant="outlined"
             value={dataEvents.data.unit}
-            onChange={(e) =>
-              setDataEvents((prevData) => ({
-                ...prevData,
-                data: {
-                  ...prevData.data,
-                  name: e.target.value,
-                },
-              }))
-            }
           />
           <InputLabel>Quantity</InputLabel>
           <TextField
-            autoFocus
-            required
             margin="dense"
-            placeholder="quantity"
-            type="text"
             fullWidth
             variant="outlined"
+            placeholder="quantity"
             value={dataEvents.data.amount}
             onChange={(e) =>
-              setDataEvents((prevData) => ({
-                ...prevData,
-                data: {
-                  ...prevData.data,
-                  amount: e.target.value,
-                },
+              setDataEvents((prev) => ({
+                ...prev,
+                data: { ...prev.data, amount: e.target.value },
               }))
             }
           />

@@ -78,7 +78,7 @@ const createStockProduct = async (body) => {
   });
 
   const requestOptions = {
-    method: "post",
+    method: "POST",
     headers: myHeaders,
     body: raw,
     redirect: "follow",
