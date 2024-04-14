@@ -5,7 +5,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import ProductionIcon from "@mui/icons-material/ProductionQuantityLimits";
 import SearchIcon from "@mui/icons-material/Search";
-import { InputBase, Typography } from "@mui/material";
+import { InputBase, Avatar } from "@mui/material";
 import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -21,8 +21,11 @@ import { alpha, styled, useTheme } from "@mui/material/styles";
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import MainRoutes from "../routes";
-// import MainRoutes from "../routes";
-
+import MenuItem from "@mui/material/MenuItem";
+import Menu from "@mui/material/Menu";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+import Typography from "@mui/material/Typography";
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -131,7 +134,15 @@ export default function MainTheme() {
   const navigate = useNavigate();
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
 
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -145,6 +156,18 @@ export default function MainTheme() {
     { label: "Users", value: "users", icon: <PersonAddAltIcon /> },
     { label: "Catetory", value: "category", icon: <CategoryIcon /> },
   ];
+  const settings = [
+    { label: "Profile", value: "profile", icon: <PersonIcon /> },
+    { label: "Acctount", value: "acctount", icon: <PersonIcon /> },
+    { label: "Logout", value: "logout", icon: <LogoutIcon /> },
+  ];
+
+  const handleSubmit = (e) => {
+    if (e == "logout") {
+      localStorage.removeItem("token");
+      window.location.reload();
+    }
+  };
   return (
     <div>
       <Box
@@ -159,26 +182,62 @@ export default function MainTheme() {
           sx={{ backgroundColor: "#009688", boxShadow: "0" }}
         >
           <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              sx={{
-                ...(open && { display: "none" }),
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search…"
-                inputProps={{ "aria-label": "search" }}
-              />
-            </Search>
+            <Box>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                sx={{
+                  ...(open && { display: "none" }),
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Search>
+                <SearchIconWrapper>
+                  <SearchIcon />
+                </SearchIconWrapper>
+                <StyledInputBase
+                  placeholder="Search…"
+                  inputProps={{ "aria-label": "search" }}
+                />
+              </Search>
+            </Box>
+            <Box sx={{ flexGrow: 1 }}></Box>
+            <Box sx={{ flexGrow: 0 }}>
+              <IconButton sx={{ p: 0 }} onClick={handleOpenUserMenu}>
+                <Avatar alt="Remy Sharp" src="#" />
+              </IconButton>
+              <Menu
+                sx={{ mt: "45px" }}
+                id="menu-appbar"
+                anchorEl={anchorElUser}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                open={Boolean(anchorElUser)}
+                onClose={handleCloseUserMenu}
+              >
+                {settings.map((setting) => (
+                  <MenuItem
+                    key={setting}
+                    onClick={() => {
+                      handleSubmit(setting.value);
+                    }}
+                  >
+                    <span>{setting.icon}</span> &nbsp;
+                    <Typography textAlign="center"> {setting.label}</Typography>
+                  </MenuItem>
+                ))}
+              </Menu>
+            </Box>
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>

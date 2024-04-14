@@ -11,14 +11,13 @@ const authLogin = (req, res) => {
 
     conn.query('SELECT id, username,email, password FROM users WHERE username = ? or email=?', [username, email], (err, results) => {
         if (err) {
-            res.status(401).json({ status: 401, message: "Not found user" })
+            return res.status(401).json({ status: 401, message: "Not found user" })
         }
         const user = results[0];
         const newPassword = results[0]?.password;
-
         bcrypt.compare(password, newPassword, (err, isMatch) => {
             if (err) {
-                res.status(500).json({ status: 500, message: "Internal server error" })
+               return res.status(500).json({ status: 500, message: "Internal server error" })
             }
             if (!isMatch) {
                 return res.status(400).json({ status: 400, message: "Username or password incorrect" })

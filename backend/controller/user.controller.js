@@ -1,6 +1,7 @@
 const conn = require("./../db/connect");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+const { isValidationEmail } = require("../help/validation");
 
 const createUser = (req, res) => {
   const { firstname, lastname, username, email, password, address } = req.body;
@@ -9,6 +10,9 @@ const createUser = (req, res) => {
     return res
       .status(400)
       .json({ status: 400, message: "Username or Email required" });
+  }
+  if (!isValidationEmail(email)) {
+    return res.status(400).json({ status: 400, message: "Email invalid" });
   }
   conn.query(
     "SELECT  username,email FROM users WHERE username = ? or email=?",
@@ -49,14 +53,17 @@ const createUser = (req, res) => {
 };
 
 const getUsers = (req, res) => {
-  conn.query("select * from users  ORDER BY created_at DESC", (err, results) => {
-    if (err)
-      return res
-        .status(500)
-        .json({ status: 500, message: "Internal server error" });
-    const total = results?.length;
-    return res.json({ total: total, data: results });
-  });
+  conn.query(
+    "select * from users  ORDER BY created_at DESC",
+    (err, results) => {
+      if (err)
+        return res
+          .status(500)
+          .json({ status: 500, message: "Internal server error" });
+      const total = results?.length;
+      return res.json({ total: total, data: results });
+    }
+  );
 };
 
 const getUserById = (req, res) => {
