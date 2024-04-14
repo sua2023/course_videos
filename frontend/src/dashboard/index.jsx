@@ -152,6 +152,7 @@ export default function MainTheme() {
   };
 
   const menuItems = [
+    { label: "Orders", value: "order", icon: <CategoryIcon /> },
     { label: "Products", value: "products", icon: <ProductionIcon /> },
     { label: "Users", value: "users", icon: <PersonAddAltIcon /> },
     { label: "Catetory", value: "category", icon: <CategoryIcon /> },
