@@ -29,6 +29,8 @@ import moment from "moment";
 import Loader from "../../components/Loader";
 import { createProduct, useGetPrudocts } from "../../service/productServie";
 import { useGetCategory } from "../../service/categoryService";
+import DialogDelete from "../../components/DialogDelete";
+import { deleteFunction } from "../../service/delete";
 
 function Home() {
   const { data, loading, error, refreshData } = useGetPrudocts();
@@ -37,7 +39,11 @@ function Home() {
   const [dataEvents, setDataEvents] = useState({ data: {}, action: "" });
   const { data: category } = useGetCategory();
   const [id, setId] = useState("");
+  const [openDelete, setOpenDelete] = useState(false);
 
+  const handleDeleteClose = () => {
+    setOpenDelete(false);
+  };
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     setId(user.id);
@@ -60,7 +66,6 @@ function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(id);
     const method = "POST";
     const url = "http://localhost:5000/api/product";
     const result = await createProduct(dataEvents.data, id, method, url);
@@ -71,6 +76,18 @@ function Home() {
     }
     if (result.status == 400) {
       toast.error(result.message);
+    }
+  };
+
+  const handleDelete = async () => {
+    const url = "http://localhost:5000/api/product";
+    const result = await deleteFunction({ id, url });
+
+    if (result.status == 200 || result.status == 201) {
+      refreshData();
+      handleDeleteClose();
+      setId("");
+      toast.success(result.message);
     }
   };
   if (loading) return <Loader />;
@@ -145,10 +162,10 @@ function Home() {
                         </IconButton>
                         <IconButton
                           color="error"
-                          // onClick={() => {
-                          //   setId(row.id);
-                          //   setOpenDelete(true);
-                          // }}
+                          onClick={() => {
+                            setId(row.id);
+                            setOpenDelete(true);
+                          }}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -281,12 +298,11 @@ function Home() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* <DialogDelete
+      <DialogDelete
         open={openDelete}
         handleClose={handleDeleteClose}
         handleSubmit={handleDelete}
-      /> */}
+      />
     </Box>
   );
 }
