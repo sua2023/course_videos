@@ -4,14 +4,14 @@ const conn = require("../../db/connect");
 const dateTime = moment().format("YYYY-MM-DD: H:M:S");
 
 const addOrder = (req, res) => {
-  const orderNo = Math.random() * 10;
-  const { userId, proId, proName, unit, price, quantity, created_at } =
-    req.body;
-  const sql = "select * from products where id=?";
+  const orderNo = (Math.floor(Math.random() * 900000) + 100000).toString();
+  const { userId, proId, proName, unit, price, quantity } = req.body;
+  const sql = "select * from product where id=?";
+ 
   conn.query(sql, [proId], (err, result) => {
     if (result?.length > 0) {
       const sql =
-        "INSERT INTO order(order_no,created_at,created_by) value(?,?,?)";
+        "INSERT INTO `order`(order_no,created_at,created_by) values(?,?,?)";
       conn.query(sql, [orderNo, dateTime, userId], (err, result) => {
         if (err) {
           return res
