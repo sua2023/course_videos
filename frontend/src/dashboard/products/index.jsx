@@ -59,7 +59,7 @@ function Home() {
     setIsOpen(false);
     setDataEvents({ data: {}, action: "" });
   };
-  console.log(dataEvents);
+
   const columns = [
     "ID",
     "Name",
