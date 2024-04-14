@@ -1,8 +1,9 @@
+/* eslint-disable no-useless-catch */
 import { useEffect, useState } from "react";
 
 const token = localStorage.getItem("token");
 
-const useGetPrudocts = () => {
+const useGetProducts = () => {
   const [data, setData] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -66,4 +67,32 @@ const createProduct = async (body, userId, method, url) => {
   }
 };
 
-export { useGetPrudocts, createProduct };
+const createStockProduct = async (body) => {
+  const myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("Authorization", `Bearer ${token}`);
+
+  const raw = JSON.stringify({
+    id: body.id,
+    amount: body.amount,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow",
+  };
+
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/product/addStock",
+      requestOptions
+    );
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
+export { useGetProducts, createProduct, createStockProduct };

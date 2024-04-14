@@ -27,5 +27,6 @@ router.get("/product", authenticateToken, product.getProducts);
 router.get("/product/:id", authenticateToken, product.getByProduct);
 router.delete("/product", authenticateToken, product.deleteProduct);
 router.put("/product/:id", authenticateToken, product.updateProduct);
+router.post("/product/addStock", authenticateToken, product.addStock);
 
 module.exports = router;
