@@ -14,6 +14,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { toast } from "react-toastify";
 import SearchIcon from "@mui/icons-material/Search";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
   Box,
   Button,
@@ -27,15 +28,16 @@ import {
 } from "@mui/material";
 import moment from "moment";
 import Loader from "../../components/Loader";
-import { createProduct, useGetPrudocts } from "../../service/productServie";
+import { createProduct, createStockProduct, useGetProducts } from "../../service/productServie";
 import { useGetCategory } from "../../service/categoryService";
 import DialogDelete from "../../components/DialogDelete";
 import { deleteFunction } from "../../service/delete";
 
 function Home() {
-  const { data, loading, error, refreshData } = useGetPrudocts();
+  const { data, loading, error, refreshData } = useGetProducts();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [dataEvents, setDataEvents] = useState({ data: {}, action: "" });
   const { data: category } = useGetCategory();
   const [id, setId] = useState("");
@@ -50,6 +52,7 @@ function Home() {
   }, [open]);
   const handleClose = () => {
     setOpen(false);
+    setIsOpen(false);
     setDataEvents({ data: {}, action: "" });
   };
 
@@ -67,8 +70,15 @@ function Home() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = "POST";
+    const updateMethod = "PUT";
     const url = "http://localhost:5000/api/product";
-    const result = await createProduct(dataEvents.data, id, method, url);
+    const updateUrl = `http://localhost:5000/api/product/${dataEvents.data.id}`;
+    const result = await createProduct(
+      dataEvents.data,
+      id,
+      dataEvents.action ? updateMethod : method,
+      dataEvents.action ? updateUrl : url
+    );
     if (result.status == 200) {
       toast.success(result.message);
       refreshData();
@@ -88,6 +98,19 @@ function Home() {
       handleDeleteClose();
       setId("");
       toast.success(result.message);
+    }
+  };
+
+  const handleAddStock = async(e) => {
+    e.preventDefault();
+    const result = await createStockProduct(dataEvents.data);
+    if (result.status == 200) {
+      toast.success(result.message);
+      refreshData();
+      handleClose();
+    }
+    if (result.status == 400) {
+      toast.error(result.message);
     }
   };
   if (loading) return <Loader />;
@@ -150,12 +173,28 @@ function Home() {
                       </TableCell>
                       <TableCell>
                         <IconButton
+                          onClick={() => {
+                            setIsOpen(true);
+                            setDataEvents({
+                              action: "",
+                              data: {
+                                id: row.id,
+                                name: row.name,
+                                unit: row.unit,
+                              },
+                            });
+                          }}
+                        >
+                          <AddCircleOutlineIcon />
+                        </IconButton>
+                        <IconButton
                           color="success"
                           onClick={() => {
                             setOpen(true);
-                            // setDataEvents((item)=>({
-                            //   ...item, data:{name: row.name}
-                            // }))
+                            setDataEvents({
+                              action: "edit",
+                              data: row,
+                            });
                           }}
                         >
                           <EditIcon />
@@ -271,6 +310,7 @@ function Home() {
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               label="Category"
+              value={dataEvents.data.category_id}
               onChange={(e) =>
                 setDataEvents((prevData) => ({
                   ...prevData,
@@ -303,6 +343,85 @@ function Home() {
         handleClose={handleDeleteClose}
         handleSubmit={handleDelete}
       />
+
+      <Dialog
+        open={isOpen}
+        onClose={handleClose}
+        component="form"
+        onSubmit={handleAddStock}
+      >
+        <DialogTitle>Form add stock product</DialogTitle>
+        <DialogContent>
+          <InputLabel>Product name</InputLabel>
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            type="text"
+            fullWidth
+            variant="outlined"
+            disabled
+            value={dataEvents.data.name}
+            onChange={(e) =>
+              setDataEvents((prevData) => ({
+                ...prevData,
+                data: {
+                  ...prevData.data,
+                  name: e.target.value,
+                },
+              }))
+            }
+          />
+          <InputLabel>Unit</InputLabel>
+          <TextField
+            disabled
+            autoFocus
+            required
+            margin="dense"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={dataEvents.data.unit}
+            onChange={(e) =>
+              setDataEvents((prevData) => ({
+                ...prevData,
+                data: {
+                  ...prevData.data,
+                  name: e.target.value,
+                },
+              }))
+            }
+          />
+          <InputLabel>Quantity</InputLabel>
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            placeholder="quantity"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={dataEvents.data.amount}
+            onChange={(e) =>
+              setDataEvents((prevData) => ({
+                ...prevData,
+                data: {
+                  ...prevData.data,
+                  amount: e.target.value,
+                },
+              }))
+            }
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={handleClose} variant="contained" color="error">
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained" color="success">
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

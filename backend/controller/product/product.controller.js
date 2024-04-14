@@ -121,10 +121,54 @@ const updateProduct = (req, res) => {
     }
   );
 };
+
+const addStock = (req, res) => {
+  const id = req.body.id;
+  const amount = req.body.amount;
+
+  conn.query(
+    "SELECT id,amount from product where id =?",
+    [id],
+    (err, result) => {
+      if (err) {
+        return res
+          .status(400)
+          .json({ status: 400, message: "Internal server error" });
+      }
+
+      if (result.length > 0) {
+        const newAmount = parseInt(amount) + parseInt(result[0].amount);
+        const sql = "UPDATE product SET amount=?,updated_at =? where id=?";
+        conn.query(sql, [newAmount, dateTime, id], (err, result) => {
+          if (err) {
+            return res
+              .status(400)
+              .json({ status: 400, message: "Internal server error" });
+          }
+          conn.query("SELECt * FROM product where id =?", [id], (err, row) => {
+            if (err) {
+              return res
+                .status(400)
+                .json({ status: 400, message: "Internal server error" });
+            }
+
+            return res.status(200).json({
+              status: 200,
+              message: "Add stock product success",
+              data: row[0],
+            });
+          });
+        });
+      }
+    }
+  );
+};
+
 module.exports = {
   createProduct,
   getProducts,
   getByProduct,
   deleteProduct,
   updateProduct,
+  addStock,
 };
