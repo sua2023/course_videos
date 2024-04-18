@@ -59,7 +59,7 @@ function Home() {
     setIsOpen(false);
     setDataEvents({ data: {}, action: "" });
   };
-  console.log(dataEvents);
+
   const columns = [
     "ID",
     "Name",
@@ -73,8 +73,8 @@ function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const updateMethod = "PUT";
     const method = "POST";
+    const updateMethod = "PUT";
     const url = "http://localhost:5000/api/product";
     const updateUrl = `http://localhost:5000/api/product/${dataEvents.data?.id}`;
     const result = await createProduct(
