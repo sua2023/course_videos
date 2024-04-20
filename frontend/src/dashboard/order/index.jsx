@@ -21,7 +21,7 @@ import * as React from "react";
 import { toast } from "react-toastify";
 import { createOrder } from "../../service/orderService";
 import { useGetProducts } from "../../service/productServie";
-
+import { useReactToPrint } from "react-to-print";
 
 function sleep(duration) {
   return new Promise((resolve) => {
@@ -56,6 +56,11 @@ function Index() {
     };
   }, [loading]);
 
+  const componentRef = React.useRef();
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
+
   const calculateTotal = (options) => {
     let total = 0;
     options.forEach((option) => {
@@ -70,7 +75,7 @@ function Index() {
     setTotalPrice(totalPrice - price * quantity);
     setOptions(updateRows);
   };
- 
+
   const handleSubmit = async () => {
     const result = await createOrder(options, id);
     if (result.status == 200) {
@@ -83,7 +88,7 @@ function Index() {
       toast.error(result.message);
     }
   };
- 
+
   return (
     <div>
       <Grid container spacing={2}>
@@ -140,7 +145,12 @@ function Index() {
           <Grid item md={8} sx={12}>
             <Paper sx={{ width: "100%", overflow: "hidden" }}>
               <TableContainer sx={{ maxHeight: 440 }}>
-                <Table stickyHeader aria-label="sticky table">
+                <Table
+                  stickyHeader
+                  aria-label="sticky table"
+                  ComponentToPrint
+                  ref={componentRef}
+                >
                   <TableHead>
                     <TableRow>
                       <TableCell>ID</TableCell>
@@ -196,8 +206,10 @@ function Index() {
                   <Button
                     variant="contained"
                     color="success"
-                    onClick={handleSubmit}
-                    
+                    onClick={() => {
+                      handleSubmit();
+                      handlePrint();
+                    }}
                   >
                     Save
                   </Button>
@@ -219,8 +231,6 @@ function Index() {
           </Box>
         </Grid>
       </Grid>
-
-      
     </div>
   );
 }

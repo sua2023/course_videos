@@ -15,42 +15,28 @@ const addOrder = (req, res) => {
         .status(400)
         .json({ status: 400, message: "Internal server error" });
     }
-
-    const insertOrderDetail = async () => {
-      for (let i = 0; i < body.length; i++) {
-        const sql =
-          "INSERT INTO order_detail(pro_id,product_name,price,unit,quantity,order_id) value(?,?,?,?,?,?)";
-        try {
-          await new Promise((resolve, reject) => {
-            conn.query(
-              sql,
-              [
-                body[i].id,
-                body[i].name,
-                body[i].price,
-                body[i].unit,
-                body[i].quantity,
-                result.insertId,
-              ],
-              (err, row) => {
-                if (err) {
-                  return res
-                    .status(400)
-                    .json({ status: 400, message: "Internal server error" });
-                }
-                return res.status(200).json({
-                  status: 200,
-                  message: "Create order success",
-                });
-              }
-            );
-          });
-        } catch (error) {
-          return error
+    for (let i = 0; i < body.length; i++) {
+      const sql =
+        "INSERT INTO order_detail(pro_id,product_name,price,unit,quantity,order_id) value(?,?,?,?,?,?)";
+      conn.query(
+        sql,
+        [
+          body[i].id,
+          body[i].name,
+          body[i].price,
+          body[i].unit,
+          body[i].quantity,
+          result.insertId,
+        ],
+        async (err, row) => {
+          if (err) {
+            return res
+              .status(400)
+              .json({ status: 400, message: "Internal server error" });
+          }
         }
-      }
-    };
-    insertOrderDetail();
+      );
+    }
   });
 };
 
@@ -60,52 +46,75 @@ const addOrder = (req, res) => {
 
 //   const sql =
 //     "INSERT INTO `order`(order_no,created_at,created_by) values(?,?,?)";
-//   conn.query(sql, [orderNo, dateTime, userId], (err, result) => {
+//   conn.query(sql, [orderNo, dateTime, userId], async (err, result) => {
 //     if (err) {
 //       return res
 //         .status(400)
 //         .json({ status: 400, message: "Internal server error" });
 //     }
-
-//     const insertOrderDetail = async () => {
+//     try {
 //       for (let i = 0; i < body.length; i++) {
-//         const sql =
-//           "INSERT INTO order_detail(pro_id,product_name,price,unit,quantity,order_id) value(?,?,?,?,?,?)";
-//         try {
-//           await new Promise((resolve, reject) => {
-//             conn.query(
-//               sql,
-//               [
-//                 body[i].id,
-//                 body[i].name,
-//                 body[i].price,
-//                 body[i].unit,
-//                 body[i].quantity,
-//                 result.insertId,
-//               ],
-//               (err, row) => {
-//                 if (err) {
-//                   reject(err);
-//                 } else {
-//                   resolve();
-//                 }
-//               }
-//             );
-//           });
-//         } catch (err) {
-//           return res
-//             .status(400)
-//             .json({ status: 400, message: "Internal server error" });
-//         }
+//         await insertOrderDetail(body[i], result.insertId);
 //       }
-//       return res.status(200).json({
+//       res.status(200).json({
 //         status: 200,
-//         message: "Create order success",
+//         message: "Order and details inserted successfully",
 //       });
-//     };
-
-//     insertOrderDetail();
+//     } catch (error) {
+//       console.error("Error inserting order detail:", error);
+//     }
 //   });
 // };
+
+// async function insertOrderDetail(body, id) {
+//   return new Promise((resolve, reject) => {
+//     const sql =
+//       "INSERT INTO order_detail(pro_id,product_name,price,unit,quantity,order_id) VALUES (?,?,?,?,?,?)";
+//     conn.query(
+//       sql,
+//       [body.id, body.name, body.price, body.unit, body.quantity, id],
+//       async (err, row) => {
+//         if (err) {
+//           reject(err);
+//         } else {
+//           resolve(row);
+//           await updateProductQuantity(body.id, body.quantity);
+//         }
+//       }
+//     );
+//   });
+// }
+
+// async function updateProductQuantity(id, quantity) {
+//   const approv = await new Promise((resolve, reject) => {
+//     conn.query("SELECT * FROM product WHERE id = ?", [id], (err, result) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         resolve(result);
+//       }
+//     });
+//   });
+//   if (approv.length > 0) {
+//     const data = approv[0];
+//     const newQuantity = parseInt(data.amount) - parseInt(quantity);
+
+//     await new Promise((resolve, reject) => {
+//       conn.query(
+//         "UPDATE product SET amount = ? WHERE id = ?",
+//         [newQuantity, data.id],
+//         (err, result) => {
+//           if (err) {
+//             reject(err);
+//           } else {
+//             resolve(result.insertId);
+//           }
+//         }
+//       );
+//     });
+
+//     return true;
+//   }
+// }
 
 module.exports = { addOrder };

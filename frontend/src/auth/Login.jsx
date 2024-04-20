@@ -30,11 +30,10 @@ function Login() {
       .then((result) => {
         if (result.status == 200) {
           const decoded = jwtDecode(result.token);
-          console.log(decoded);
           localStorage.setItem("token", result.token);
           localStorage.setItem("user", JSON.stringify(decoded));
-          location.reload();
           navigate("/dashboard");
+          location.reload();
         }
       })
       .catch((error) => {
