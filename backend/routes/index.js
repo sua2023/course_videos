@@ -5,6 +5,7 @@ const userRoute = require("./../controller/user.controller");
 const category = require("./../controller/category/category.controller");
 const product = require("./../controller/product/product.controller");
 const order = require("./../controller/order/order.controller");
+const report = require("./../controller/report/report.controller");
 
 const { authenticateToken } = require("../middleware/jwtToken");
 
@@ -30,6 +31,9 @@ router.delete("/product", authenticateToken, product.deleteProduct);
 router.put("/product/:id", authenticateToken, product.updateProduct);
 router.post("/product/addStock", authenticateToken, product.addStock);
 
+// report
+router.get("/report", authenticateToken, report.getReports);
+router.get("/report/:id", authenticateToken, report.getByReport);
 
 // order
 router.post("/order",authenticateToken,order.addOrder)

@@ -21,6 +21,7 @@ import * as React from "react";
 import { toast } from "react-toastify";
 import { createOrder } from "../../service/orderService";
 import { useGetProducts } from "../../service/productServie";
+import { useReactToPrint } from 'react-to-print';
 
 
 function sleep(duration) {
@@ -56,6 +57,11 @@ function Index() {
     };
   }, [loading]);
 
+
+  const componentRef = React.useRef();
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
   const calculateTotal = (options) => {
     let total = 0;
     options.forEach((option) => {
@@ -74,6 +80,7 @@ function Index() {
   const handleSubmit = async () => {
     const result = await createOrder(options, id);
     if (result.status == 200) {
+      handlePrint();
       toast.success(result.message);
       refreshData();
       setOptions([]);
@@ -140,7 +147,7 @@ function Index() {
           <Grid item md={8} sx={12}>
             <Paper sx={{ width: "100%", overflow: "hidden" }}>
               <TableContainer sx={{ maxHeight: 440 }}>
-                <Table stickyHeader aria-label="sticky table">
+                <Table stickyHeader aria-label="sticky table" ComponentToPrint ref={componentRef} >
                   <TableHead>
                     <TableRow>
                       <TableCell>ID</TableCell>
