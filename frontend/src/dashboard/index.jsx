@@ -26,6 +26,7 @@ import Menu from "@mui/material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
 import Typography from "@mui/material/Typography";
+import BarChartIcon from '@mui/icons-material/BarChart';
 const drawerWidth = 240;
 
 const openedMixin = (theme) => ({
@@ -156,6 +157,7 @@ export default function MainTheme() {
     { label: "Products", value: "products", icon: <ProductionIcon /> },
     { label: "Users", value: "users", icon: <PersonAddAltIcon /> },
     { label: "Category", value: "category", icon: <CategoryIcon /> },
+    { label: "Report", value: "report", icon: <BarChartIcon /> },
   ];
   const settings = [
     { label: "Profile", value: "profile", icon: <PersonIcon /> },

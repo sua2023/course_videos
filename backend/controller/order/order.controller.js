@@ -30,6 +30,10 @@ const addOrder = (req, res) => {
 };
 
 async function insertOrderDetail(body, id) {
+<<<<<<< HEAD
+=======
+ 
+>>>>>>> f2e526c6e855b099ca89e7dd8cc59b2696c31d05
   return new Promise((resolve, reject) => {
     const sql =
       "INSERT INTO order_detail(pro_id,product_name,price,unit,quantity,order_id) VALUES (?,?,?,?,?,?)";
