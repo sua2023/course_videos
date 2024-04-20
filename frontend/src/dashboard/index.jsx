@@ -155,7 +155,7 @@ export default function MainTheme() {
     { label: "Order", value: "order", icon: <ProductionIcon /> },
     { label: "Products", value: "products", icon: <ProductionIcon /> },
     { label: "Users", value: "users", icon: <PersonAddAltIcon /> },
-    { label: "Catetory", value: "category", icon: <CategoryIcon /> },
+    { label: "Category", value: "category", icon: <CategoryIcon /> },
   ];
   const settings = [
     { label: "Profile", value: "profile", icon: <PersonIcon /> },
